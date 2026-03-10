@@ -184,4 +184,4 @@ def delete_task(task_id):
 # debug=True  →  auto-reloads on code change, shows error pages
 # -------------------------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

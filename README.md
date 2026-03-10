@@ -1,243 +1,131 @@
-# toDo — Task Manager App (Flask Version)
+# To-Do App (Flask + Docker + CI/CD)
 
-A clean and simple **Task Manager web application built with Python and Flask**.
-
-This project allows users to create, organize, and manage tasks using a modern sidebar interface similar to popular productivity apps.
-
-The application is designed for **learning web development and DevOps fundamentals** with a simple backend and clean UI.
+A simple **To-Do List application** built with Python Flask, Dockerized, and deployed using **CI/CD** with GitHub Actions.  
+This project demonstrates **DevOps practices** for beginners: version control, containerization, CI/CD pipelines, and local deployment with Docker Compose.
 
 ---
 
-## Features
+## Project Overview
 
-- Full-screen responsive layout
-- Sidebar navigation with **Today** and **Upcoming** views
-- Tasks grouped by **Projects**
-- Color-coded project indicators
-- Add tasks with:
-  - Name
-  - Description
-  - Time
-  - Priority
-  - Project
-  - Group
-- Mark tasks **completed**
-- Delete tasks
-- Mobile-friendly interface
+- Build a Flask-based To-Do application.
+- Containerize the app with Docker.
+- Push Docker images to **Docker Hub** automatically via **GitHub Actions**.
+- Deploy the app locally using **Docker Compose**.
+
+---
+
+## Tech Stack
+
+- **Backend:** Python Flask  
+- **Containerization:** Docker  
+- **CI/CD:** GitHub Actions  
+- **Registry:** Docker Hub  
+- **Deployment:** Docker Compose (local)
 
 ---
 
 ## Project Structure
 
-```
+
 todo-app-flask/
 │
-├── app.py
-│   Main Flask application
-│   Contains routes, task logic, and helper functions
-│
-├── requirements.txt
-│   Python dependencies
-│
-├── templates/
-│   └── index.html
-│       HTML template rendered by Flask
-│
-└── static/
-    └── css/
-        └── style.css
-        Application styles
-```
+├─ app.py # Flask application
+├─ requirements.txt # Python dependencies
+├─ Dockerfile # Docker build instructions
+├─ docker-compose.yml # Compose file for local deployment
+├─ .github/workflows/ # GitHub Actions workflow
+│ └─ ci.yml
+├─ static/ # CSS/JS files
+└─ templates/ # HTML templates
+
 
 ---
 
-## Requirements
+## Setup Instructions
 
-- Python **3.8 or higher**
-- pip (Python package manager)
-
----
-
-## Installation and Setup
-
-### 1. Check Python installation
+### 1️⃣ Clone the repository
 
 ```bash
-python --version
-```
-
-or
-
-```bash
-python3 --version
-```
-
-If Python is not installed, download it from:
-
-https://www.python.org
-
----
-
-### 2. Clone the repository
-
-```bash
-git clone <your-repository-url>
+git clone https://github.com/abhinabh7/toDo.git
 cd todo-app-flask
-```
+2️⃣ Build Docker image locally (optional)
+docker build -t todo-app .
+docker run -p 5000:5000 todo-app
 
-Or open the project folder manually.
+Visit http://localhost:5000 to see the app.
 
----
+3️⃣ CI/CD with GitHub Actions
 
-### 3. Create a Virtual Environment
+Workflow located at .github/workflows/ci.yml
 
-A virtual environment keeps project dependencies separate from system packages.
+Automatically builds and pushes Docker image to Docker Hub whenever you push code to main.
 
-```bash
-python -m venv venv
-```
+Workflow steps:
 
-#### Activate the environment
+Checkout repository code
 
-Windows:
+Log in to Docker Hub using secrets (DOCKER_USERNAME and DOCKER_PASSWORD)
 
-```bash
-venv\Scripts\activate
-```
+Build Docker image
 
-Mac / Linux:
+Push image to Docker Hub
 
-```bash
-source venv/bin/activate
-```
+4️⃣ Deployment with Docker Compose
 
-When activated, your terminal will show:
+Ensure docker-compose.yml is present:
 
-```
-(venv)
-```
+version: '3'
+services:
+  web:
+    image: abhinabh/todo-app:latest
+    ports:
+      - "5000:5000"
 
----
+Pull latest image and run:
 
-### 4. Install dependencies
+docker compose pull
+docker compose up -d
 
-```bash
-pip install -r requirements.txt
-```
+Access app at http://localhost:5000
 
-This installs:
+Automatically pulls the latest Docker image from Docker Hub.
 
-- Flask
+5️⃣ GitHub Secrets Setup
 
----
+For CI/CD workflow, create the following repository secrets:
 
-### 5. Run the application
+Secret Name	Value
+DOCKER_USERNAME	your Docker Hub username
+DOCKER_PASSWORD	your Docker Hub Personal Access Token
+6️⃣ Notes
 
-```bash
-python app.py
-```
+The Docker Hub image is public, so anyone can pull it with:
 
-You should see:
+docker pull abhinabh/todo-app:latest
 
-```
-* Running on http://127.0.0.1:5000
-```
+CI/CD pipeline ensures any code changes are automatically reflected in the Docker image.
 
----
+Local deployment via Docker Compose ensures you can test the latest version easily.
 
-### 6. Open the application
+7️⃣ Future Enhancements
 
-Open your browser and go to:
+Make Docker Hub image private (optional).
 
-```
-http://localhost:5000
-```
+Deploy the app to cloud servers (AWS, Azure, DigitalOcean, etc.).
 
----
+Add automated testing in the CI/CD workflow.
 
-## Stop the Server
+Add database persistence (currently the app is in-memory).
 
-Press:
+Author
 
-```
-CTRL + C
-```
+Abhinabh – DevOps Beginner Project
 
-in the terminal.
 
 ---
 
-## Deactivate Virtual Environment
+You can copy everything above, **paste it into your `README.md`**, save, and push it to GitHub.  
 
-```bash
-deactivate
-```
+If you want, I can **also add some badges** (build status, Docker Hub pulls) to make it look **more professional for your portfolio**.  
 
----
-
-## Application Routes
-
-| Method | Route | Description |
-|------|------|------|
-| GET | `/` | Display the main task page |
-| GET | `/?view=upcoming` | Show upcoming tasks |
-| POST | `/add` | Add a new task |
-| GET | `/toggle/<id>` | Mark task done / undone |
-| GET | `/delete/<id>` | Delete a task |
-
----
-
-## Task Data Model
-
-Each task contains the following fields:
-
-| Field | Type | Example |
-|------|------|------|
-| id | integer | 1 |
-| name | string | Buy groceries |
-| description | string | Milk and bread |
-| time | string | 07:30 |
-| project | string | Shopping |
-| group | string | today |
-| priority | string | p1, p2, p3 |
-| done | boolean | true / false |
-
----
-
-## Technologies Used
-
-- Python
-- Flask
-- HTML
-- CSS
-- Jinja2 Templates
-
----
-
-## Future Improvements
-
-Possible features to extend the project:
-
-- Store tasks using **SQLite database**
-- Add **task editing**
-- Add **due dates**
-- Implement **user authentication**
-- Add **dark mode**
-- Build a **REST API**
-
----
-
-## Purpose of the Project
-
-This project was built for:
-
-- Learning **Flask web development**
-- Understanding **backend routing**
-- Practicing **template rendering**
-- Preparing for **DevOps deployment projects**
-
----
-
-## License
-
-This project is open-source and available for learning purposes.
+Do you want me to do that next?

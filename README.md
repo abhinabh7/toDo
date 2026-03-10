@@ -41,6 +41,19 @@ todo-app-flask/
 
 ---
 
+## CI/CD Architecture
+
+![CI/CD Pipeline Diagram](./1773162465446_image.png)
+
+The workflow follows 4 steps:
+
+1. **Code Changes & Push** – Developer writes code locally and pushes to GitHub.
+2. **Trigger GitHub Actions** – Push to `main` triggers the CI/CD pipeline (Checkout → Build Docker Image → Push to Docker Hub).
+3. **Pull Latest Image** – Docker Compose pulls the latest image (`abhinabh/todo-app:latest`) from Docker Hub.
+4. **Deploy & Update** – App is served locally via Docker Compose at `http://localhost:5000`.
+
+---
+
 ## Setup Instructions
 
 ### 1️⃣ Clone the repository

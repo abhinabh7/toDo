@@ -43,7 +43,7 @@ todo-app-flask/
 
 ## CI/CD Architecture
 
-![CI/CD Pipeline Diagram](./1773162465446_image.png)
+![CI/CD Pipeline Diagram](images/cicd-pipeline-diagram.png)
 
 The workflow follows 4 steps:
 

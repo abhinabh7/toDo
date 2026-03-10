@@ -1,0 +1,4 @@
+# Python dependencies for toDo (Flask version)
+# Install with:  pip install -r requirements.txt
+
+flask>=2.3.0

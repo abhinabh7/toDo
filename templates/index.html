@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>toDo</title>
+
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <!--
+    Flask serves static files from the /static folder.
+    url_for('static', filename='css/style.css') generates the correct URL.
+  -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+</head>
+<body>
+
+  <!-- Dark backdrop shown behind the sidebar on mobile -->
+  <div class="drawer-backdrop" id="backdrop" onclick="closeSidebar()"></div>
+
+  <div class="app">
+
+    <!-- =============================================
+         SIDEBAR
+    ============================================= -->
+    <aside class="sidebar" id="sidebar">
+
+      <!-- App name -->
+      <div class="brand">
+        <span class="brand-name">to<span>Do</span></span>
+        <!-- ✕ button — only visible on mobile -->
+        <button class="close-btn" onclick="closeSidebar()">✕</button>
+      </div>
+
+      <!-- Add task shortcut — opens the modal via JS -->
+      <div class="sidebar-add" onclick="openModal()">
+        <div class="add-icon">+</div>
+        Add task
+      </div>
+
+      <!-- Navigation links -->
+      <nav class="nav">
+        <!--
+          onclick="setView(...)" is defined in the <script> block below.
+          It sets the active highlight and switches the visible task group.
+          Because this is a server-rendered app, we use JS only for the
+          modal open/close; view switching reloads the page via anchor links.
+        -->
+        <a class="nav-item {% if active_view == 'today' %}active{% endif %}"
+           href="/?view=today">
+          <span class="nav-icon">📋</span> Today
+        </a>
+        <a class="nav-item {% if active_view == 'upcoming' %}active{% endif %}"
+           href="/?view=upcoming">
+          <span class="nav-icon">📅</span> Upcoming
+        </a>
+      </nav>
+
+      <!-- Projects section -->
+      <div class="sec-label">Projects</div>
+
+      <!--
+        Loop through all projects from PROJECT_COLORS in app.py.
+        Count pending (not done) tasks per project for the badge.
+      -->
+      {% for proj, color in project_colors.items() %}
+        {% set pending_count = (today + upcoming)
+             | selectattr('project', 'equalto', proj)
+             | rejectattr('done')
+             | list | length %}
+        <div class="proj-item">
+          <div class="proj-dot" style="background: {{ color }};"></div>
+          {{ proj }}
+          {% if pending_count %}
+            <span class="proj-count">{{ pending_count }}</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+
+    </aside>
+
+    <!-- =============================================
+         MAIN PANEL
+    ============================================= -->
+    <div class="main">
+
+      <!-- Top bar -->
+      <div class="topbar">
+        <!-- ☰ hamburger — mobile only -->
+        <button class="menu-btn" onclick="openSidebar()">☰</button>
+
+        <!-- Page title changes based on active view -->
+        <span class="topbar-title">
+          {% if active_view == 'upcoming' %}Upcoming{% else %}Today{% endif %}
+        </span>
+
+        <!-- Red Add-task button — opens modal -->
+        <button class="topbar-add" onclick="openModal()">
+          <span class="plus-icon">+</span>
+          <span class="btn-text">Add task</span>
+        </button>
+      </div>
+
+      <!-- Scrollable content area -->
+      <div class="content">
+
+        <!--
+          We render the task group that matches the active view.
+          active_view is set in app.py based on ?view= query param.
+        -->
+        {% set view_tasks = today if active_view == 'today' else upcoming %}
+
+        {% if view_tasks | length == 0 %}
+          <!-- Empty state -->
+          <div class="empty-state">
+            <div class="empty-icon">✓</div>
+            <div class="empty-title">All clear!</div>
+            <div class="empty-sub">No tasks here yet. Add one above.</div>
+          </div>
+
+        {% else %}
+          <!--
+            Group tasks by project.
+            We use a namespace trick because Jinja2 scoping
+            does not allow setting variables inside loops normally.
+          -->
+          {% set ns = namespace(rendered_projs=[]) %}
+
+          {% for task in view_tasks %}
+            {% if task.project not in ns.rendered_projs %}
+              {% set ns.rendered_projs = ns.rendered_projs + [task.project] %}
+
+              <!-- Project group header -->
+              <div class="task-group">
+                <div class="group-hdr">{{ task.project or 'No project' }}</div>
+
+                <!-- All tasks in this project -->
+                {% for t in view_tasks if t.project == task.project %}
+                <div class="task-row {% if t.done %}is-done{% endif %}">
+
+                  <!--
+                    Clicking the circle hits GET /toggle/<id>
+                    which flips t.done in app.py and redirects back.
+                  -->
+                  <a href="/toggle/{{ t.id }}"
+                     class="circle {{ t.priority }}{% if t.done %} done{% endif %}"
+                     title="Toggle done"></a>
+
+                  <!-- Task text + sub-info -->
+                  <div class="task-body">
+                    <div class="task-name {% if t.done %}done{% endif %}">{{ t.name }}</div>
+                    {% if t.time or t.description %}
+                      <div class="task-sub">
+                        {% if t.time %}
+                          <span class="task-time">📅 {{ format_time(t.time) }}</span>
+                        {% endif %}
+                        {% if t.description %}
+                          <span class="task-desc-text">{{ t.description }}</span>
+                        {% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+
+                  <!-- Right side: project tag + delete link -->
+                  <div class="task-right">
+                    {% if t.project %}
+                      <span class="task-proj">
+                        {{ t.project }} <span class="hash">#</span>
+                      </span>
+                    {% endif %}
+                    <!--
+                      Clicking ✕ hits GET /delete/<id>
+                      confirm() asks the user before deleting.
+                    -->
+                    <a href="/delete/{{ t.id }}"
+                       class="row-del"
+                       onclick="return confirm('Delete this task?')"
+                       title="Delete task">✕</a>
+                  </div>
+
+                </div>
+                {% endfor %}
+
+                <!-- Inline add-task row at bottom of each group -->
+                <div class="add-inline" onclick="openModal('{{ active_view }}', '{{ task.project }}')">
+                  <span class="plus">+</span><span>Add task</span>
+                </div>
+
+              </div><!-- /task-group -->
+            {% endif %}
+          {% endfor %}
+
+        {% endif %}
+
+      </div><!-- /content -->
+    </div><!-- /main -->
+  </div><!-- /app -->
+
+
+  <!-- =============================================
+       ADD TASK MODAL
+       This is a real HTML <form> that POSTs to /add.
+       All <input name="..."> values map to
+       request.form.get("...") in app.py.
+  ============================================= -->
+  <div class="overlay" id="overlay" onclick="backdropClose(event)">
+    <div class="modal">
+      <div class="modal-title">New Task</div>
+
+      <form action="/add" method="POST">
+
+        <!-- name="name"  →  request.form.get("name") in app.py -->
+        <div class="field">
+          <label for="m-name">Task name <span class="req">*</span></label>
+          <input id="m-name" type="text" name="name"
+                 placeholder="What needs to be done?" required autocomplete="off"/>
+        </div>
+
+        <!-- name="description"  →  request.form.get("description") -->
+        <div class="field">
+          <label for="m-desc">Description</label>
+          <textarea id="m-desc" name="description"
+                    placeholder="Add a note (optional)" rows="2"></textarea>
+        </div>
+
+        <div class="field-row">
+          <!-- name="time"  →  stored as "HH:MM", displayed as "7:30 AM" -->
+          <div class="field">
+            <label for="m-time">Time</label>
+            <input id="m-time" type="time" name="time"/>
+          </div>
+          <!-- name="priority"  →  "p1" | "p2" | "p3" | "" -->
+          <div class="field">
+            <label for="m-pri">Priority</label>
+            <select id="m-pri" name="priority">
+              <option value="">None</option>
+              <option value="p1">🔴 High</option>
+              <option value="p2">🟠 Medium</option>
+              <option value="p3">🔵 Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <!-- name="project"  →  one of the keys in PROJECT_COLORS -->
+          <div class="field">
+            <label for="m-proj">Project</label>
+            <select id="m-proj" name="project">
+              <option value="">No project</option>
+              {% for proj in all_projects %}
+                <option value="{{ proj }}">{{ proj }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <!-- name="group"  →  "today" | "upcoming" -->
+          <div class="field">
+            <label for="m-group">Group</label>
+            <select id="m-group" name="group">
+              <option value="today">Today</option>
+              <option value="upcoming">Upcoming</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <!-- type="button" prevents form submit — just closes the modal -->
+          <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <!-- type="submit" sends the POST request to /add in app.py -->
+          <button type="submit" class="btn-add">Add task</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+
+  <script>
+    // ----------------------------------------------------------
+    // MODAL helpers
+    // ----------------------------------------------------------
+    function openModal(group, proj) {
+      // Pre-fill group and project if passed in
+      if (group) document.getElementById('m-group').value = group;
+      if (proj)  document.getElementById('m-proj').value  = proj;
+      document.getElementById('overlay').classList.add('open');
+      setTimeout(() => document.getElementById('m-name').focus(), 40);
+    }
+
+    function closeModal() {
+      document.getElementById('overlay').classList.remove('open');
+    }
+
+    function backdropClose(e) {
+      if (e.target === document.getElementById('overlay')) closeModal();
+    }
+
+    // ----------------------------------------------------------
+    // SIDEBAR drawer (mobile)
+    // ----------------------------------------------------------
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('open');
+      document.getElementById('backdrop').classList.add('open');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('backdrop').classList.remove('open');
+    }
+
+    // ESC closes the modal
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1018 @@
+/* =============================================================
+   toDo — style.css  |  Professional Edition
+   Standard : WCAG 2.1 AA · W3C CSS3 · 4-pt spacing grid
+   Shared by : Flask (static/css/) & Node.js (public/css/)
+
+   SECTIONS
+   ─────────────────────────────────────────────────────────────
+   1.  Design Tokens   (single source of truth — change here, ripples everywhere)
+   2.  Reset & Base
+   3.  App Shell
+   4.  Sidebar
+   5.  Main Panel
+   6.  Task Groups & Rows
+   7.  Modal
+   8.  Utilities & Scrollbar
+   9.  Responsive Breakpoints
+   ============================================================= */
+
+
+/* =============================================================
+   1.  DESIGN TOKENS  (CSS Custom Properties)
+   ============================================================= */
+:root {
+
+  /* ─── Colour Palette ─────────────────────────────────────── */
+  --clr-brand:           #d93025;
+  --clr-brand-hover:     #b71c1c;
+  --clr-brand-surface:   #fdf2f2;
+  --clr-brand-ring:      rgba(217, 48, 37, 0.18);
+
+  --clr-text-900:        #111827;   /* headings / task names  — contrast 18.1 : 1 */
+  --clr-text-700:        #374151;   /* body / nav             — contrast 10.7 : 1 */
+  --clr-text-500:        #6b7280;   /* secondary / meta */
+  --clr-text-400:        #9ca3af;   /* placeholders / hints */
+  --clr-text-inverse:    #ffffff;
+
+  --clr-success:         #15803d;
+  --clr-success-surface: #f0fdf4;
+
+  --clr-pri-high:        #dc2626;   /* p1 — red   */
+  --clr-pri-mid:         #d97706;   /* p2 — amber */
+  --clr-pri-low:         #2563eb;   /* p3 — blue  */
+  --clr-done:            #d1d5db;
+
+  --clr-surface:         #ffffff;
+  --clr-sidebar-bg:      #f5f4f0;
+  --clr-hover:           #ebe9e4;
+  --clr-input-bg:        #f9f8f6;
+
+  --clr-border:          #e2ddd7;
+  --clr-border-light:    #ede9e4;
+  --clr-border-strong:   #c8c2b8;
+
+  /* ─── Typography ─────────────────────────────────────────────
+     Base = 16 px (browser default, never override on <html>).
+     Modular Scale — Major Third  × 1.25 :
+       xs   = 12 px  = 0.75 rem    → labels, badges, meta
+       sm   = 14 px  = 0.875 rem   → secondary text, buttons
+       base = 16 px  = 1 rem       → body, nav, task names  ← WCAG minimum
+       lg   = 20 px  = 1.25 rem    → section headings, page title
+       xl   = 24 px  = 1.5 rem     → brand name
+  ─────────────────────────────────────────────────────────── */
+  --font-stack:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+
+  --fs-xs:         0.75rem;    /* 12 px */
+  --fs-sm:         0.875rem;   /* 14 px */
+  --fs-base:       1rem;       /* 16 px */
+  --fs-lg:         1.25rem;    /* 20 px */
+  --fs-xl:         1.5rem;     /* 24 px */
+
+  --fw-regular:    400;
+  --fw-medium:     500;
+  --fw-semibold:   600;
+  --fw-bold:       700;
+
+  --lh-tight:      1.25;
+  --lh-snug:       1.4;
+  --lh-base:       1.6;
+
+  /* ─── Spacing — 4-pt Grid ─────────────────────────────────── */
+  --sp-1:    0.25rem;   /*  4 px */
+  --sp-2:    0.5rem;    /*  8 px */
+  --sp-3:    0.75rem;   /* 12 px */
+  --sp-4:    1rem;      /* 16 px */
+  --sp-5:    1.25rem;   /* 20 px */
+  --sp-6:    1.5rem;    /* 24 px */
+  --sp-8:    2rem;      /* 32 px */
+  --sp-10:   2.5rem;    /* 40 px */
+  --sp-12:   3rem;      /* 48 px */
+  --sp-16:   4rem;      /* 64 px */
+
+  /* ─── Layout ─────────────────────────────────────────────── */
+  --sidebar-w:   270px;
+  --topbar-h:     64px;   /* taller = more breathing room */
+
+  /* ─── Border Radius ──────────────────────────────────────── */
+  --r-sm:    0.375rem;   /*  6 px */
+  --r-md:    0.625rem;   /* 10 px */
+  --r-lg:    0.875rem;   /* 14 px */
+  --r-xl:    1.125rem;   /* 18 px */
+  --r-full:  9999px;
+
+  /* ─── Shadows ────────────────────────────────────────────── */
+  --shadow-xs:     0 1px 2px rgba(0,0,0,.07);
+  --shadow-sm:     0 1px 4px rgba(0,0,0,.08), 0 2px 8px rgba(0,0,0,.06);
+  --shadow-md:     0 4px 16px rgba(0,0,0,.10), 0 1px 4px rgba(0,0,0,.06);
+  --shadow-lg:     0 12px 40px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.06);
+  --shadow-drawer: 8px 0 32px rgba(0,0,0,.12);
+
+  /* ─── Motion ─────────────────────────────────────────────── */
+  --ease:      cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dur-fast:  120ms;
+  --dur-base:  200ms;
+  --dur-slow:  300ms;
+}
+
+
+/* =============================================================
+   2.  RESET & BASE
+   ============================================================= */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+  font-size: 100% honours the user's OS / browser accessibility
+  preference (e.g. large-text mode). All rem values scale correctly.
+*/
+html {
+  font-size: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  height: 100%;
+  font-family: var(--font-stack);
+  font-size: var(--fs-base);        /* 16 px — WCAG baseline body text             */
+  font-weight: var(--fw-regular);
+  line-height: var(--lh-base);
+  color: var(--clr-text-700);
+  background: var(--clr-surface);
+  overflow: hidden;                  /* single-page app shell — no outer scroll     */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+
+/* Keyboard-only focus ring (WCAG 2.4.7) */
+:focus-visible {
+  outline: 2.5px solid var(--clr-brand);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+
+/* =============================================================
+   3.  APP SHELL
+   ============================================================= */
+.app {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+
+/* =============================================================
+   4.  SIDEBAR
+   ============================================================= */
+.sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--clr-sidebar-bg);
+  border-right: 1px solid var(--clr-border);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ── Brand row ─────────────────────────────────────────────── */
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--sp-5);
+  height: var(--topbar-h);           /* aligns optically with main topbar           */
+  border-bottom: 1px solid var(--clr-border);
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: var(--fs-xl);           /* 24 px — bold, unmistakeable brand           */
+  font-weight: var(--fw-bold);
+  color: var(--clr-text-900);
+  letter-spacing: -0.5px;
+  line-height: var(--lh-tight);
+}
+.brand-name span {
+  color: var(--clr-brand);           /* "Do" in red */
+}
+
+/* ✕ close — desktop: hidden; mobile: visible */
+.close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;                    /* 36 px minimum tap target                    */
+  height: 2.25rem;
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-base);
+  color: var(--clr-text-500);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease),
+              color     var(--dur-fast) var(--ease);
+}
+.close-btn:hover {
+  background: var(--clr-hover);
+  color: var(--clr-text-700);
+}
+
+/* ── Sidebar "Add task" shortcut ─────────────────────────── */
+.sidebar-add {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  margin: var(--sp-4) var(--sp-3) var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  color: var(--clr-brand);
+  font-size: var(--fs-base);         /* 16 px — same weight as nav items            */
+  font-weight: var(--fw-semibold);
+  user-select: none;
+  transition: background var(--dur-fast) var(--ease);
+}
+.sidebar-add:hover {
+  background: var(--clr-hover);
+}
+
+.add-icon {
+  width: 1.625rem;                   /* 26 px */
+  height: 1.625rem;
+  border-radius: var(--r-full);
+  background: var(--clr-brand);
+  color: var(--clr-text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: var(--fw-bold);
+  flex-shrink: 0;
+  line-height: 1;
+  transition: background var(--dur-fast) var(--ease);
+}
+.sidebar-add:hover .add-icon {
+  background: var(--clr-brand-hover);
+}
+
+/* ── Navigation ─────────────────────────────────────────── */
+.nav {
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--clr-border-light);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5);  /* 12 px top/bottom — ample vertical space     */
+  margin: 2px var(--sp-3);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  color: var(--clr-text-700);
+  font-size: var(--fs-base);         /* 16 px — WCAG minimum readable body size     */
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-tight);
+  text-decoration: none;
+  white-space: nowrap;
+  min-height: 2.75rem;               /* 44 px — Apple / WCAG touch target           */
+  transition: background var(--dur-fast) var(--ease),
+              color     var(--dur-fast) var(--ease);
+}
+.nav-item:hover {
+  background: var(--clr-hover);
+  color: var(--clr-text-900);
+}
+.nav-item.active {
+  background: var(--clr-brand-surface);
+  color: var(--clr-brand);
+  font-weight: var(--fw-semibold);
+}
+
+.nav-icon {
+  font-size: var(--fs-base);
+  width: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* ── Projects section ───────────────────────────────────── */
+.sec-label {
+  padding: var(--sp-5) var(--sp-5) var(--sp-2);
+  font-size: var(--fs-xs);           /* 12 px — compact uppercase section label     */
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--clr-text-400);
+}
+
+.proj-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-5);
+  margin: 2px var(--sp-3);
+  border-radius: var(--r-md);
+  cursor: pointer;
+  color: var(--clr-text-700);
+  font-size: var(--fs-base);         /* 16 px */
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+  min-height: 2.75rem;
+  transition: background var(--dur-fast) var(--ease),
+              color     var(--dur-fast) var(--ease);
+}
+.proj-item:hover {
+  background: var(--clr-hover);
+  color: var(--clr-text-900);
+}
+
+.proj-dot {
+  width: 0.625rem;                   /* 10 px — visible but unobtrusive             */
+  height: 0.625rem;
+  border-radius: var(--r-full);
+  flex-shrink: 0;
+}
+
+/* Count badge */
+.proj-count {
+  margin-left: auto;
+  font-size: var(--fs-xs);          /* 12 px */
+  color: var(--clr-text-500);
+  font-weight: var(--fw-semibold);
+  background: var(--clr-border-light);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+  min-width: 1.375rem;
+  text-align: center;
+  line-height: 1.6;
+}
+
+
+/* =============================================================
+   5.  MAIN PANEL
+   ============================================================= */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+/* ── Top bar ────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  padding: 0 var(--sp-8);            /* 0 32 px */
+  height: var(--topbar-h);           /* 64 px */
+  border-bottom: 1px solid var(--clr-border);
+  flex-shrink: 0;
+  background: var(--clr-surface);
+}
+
+/* ☰ hamburger — hidden on desktop */
+.menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;                     /* 40 px */
+  height: 2.5rem;
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: 1.25rem;
+  color: var(--clr-text-500);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--dur-fast) var(--ease);
+}
+.menu-btn:hover {
+  background: var(--clr-hover);
+  color: var(--clr-text-700);
+}
+
+.topbar-title {
+  font-size: var(--fs-lg);           /* 20 px — clear page-level heading            */
+  font-weight: var(--fw-bold);
+  color: var(--clr-text-900);
+  flex: 1;
+  line-height: var(--lh-tight);
+  letter-spacing: -0.2px;
+}
+
+/* Red CTA button */
+.topbar-add {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  background: var(--clr-brand);
+  color: var(--clr-text-inverse);
+  border: none;
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-5);  /* 12 px 20 px */
+  font-family: inherit;
+  font-size: var(--fs-sm);           /* 14 px — clear hierarchy below body text     */
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--shadow-xs);
+  transition: background  var(--dur-fast) var(--ease),
+              box-shadow  var(--dur-fast) var(--ease),
+              transform   var(--dur-fast) var(--ease);
+}
+.topbar-add:hover {
+  background: var(--clr-brand-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+.topbar-add:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.plus-icon {
+  font-size: 1.1rem;
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+/* ── Scrollable content area ─────────────────────────── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-8) var(--sp-10) var(--sp-16);  /* 32 px 40 px 64 px */
+}
+
+
+/* =============================================================
+   6.  TASK GROUPS & ROWS
+   ============================================================= */
+
+/* ── Group wrapper ─────────────────────────────────────── */
+.task-group {
+  margin-bottom: var(--sp-10);       /* 40 px — strong visual separation           */
+}
+
+/* Project group heading */
+.group-hdr {
+  font-size: var(--fs-xs);           /* 12 px — compact label above task list       */
+  font-weight: var(--fw-bold);
+  color: var(--clr-text-500);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding-bottom: var(--sp-3);
+  border-bottom: 2px solid var(--clr-border-light);
+  margin-bottom: var(--sp-1);
+}
+
+/* ── Task row ───────────────────────────────────────────── */
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-4);                  /* 16 px */
+  padding: var(--sp-4) var(--sp-3);  /* 16 px top/bottom = 52 px+ min height       */
+  border-bottom: 1px solid var(--clr-border-light);
+  border-radius: var(--r-sm);
+  min-height: 3.25rem;               /* 52 px — generous touch target               */
+  transition: background var(--dur-fast) var(--ease);
+}
+.task-row:last-of-type {
+  border-bottom: none;
+}
+.task-row:hover {
+  background: #faf9f6;
+}
+.task-row:hover .row-del {
+  opacity: 1;
+  pointer-events: auto;
+}
+.task-row.is-done {
+  opacity: 0.45;
+}
+
+/* ── Circle checkbox ───────────────────────────────────── */
+.circle {
+  width: 1.375rem;                   /* 22 px */
+  height: 1.375rem;
+  border-radius: var(--r-full);
+  border: 2px solid var(--clr-done);
+  flex-shrink: 0;
+  margin-top: 3px;                   /* optical alignment with text cap-height      */
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: border-color var(--dur-fast) var(--ease),
+              background   var(--dur-fast) var(--ease),
+              transform    var(--dur-fast) var(--ease);
+}
+.circle:hover {
+  border-color: var(--clr-brand);
+  transform: scale(1.1);
+}
+.circle.p1 { border-color: var(--clr-pri-high); }
+.circle.p2 { border-color: var(--clr-pri-mid);  }
+.circle.p3 { border-color: var(--clr-pri-low);  }
+.circle.done {
+  background: var(--clr-done);
+  border-color: var(--clr-done);
+  transform: none;
+}
+.circle.done::after {
+  content: '✓';
+  color: var(--clr-text-inverse);
+  font-size: 0.7rem;
+  font-weight: var(--fw-bold);
+  line-height: 1;
+}
+
+/* ── Task text body ─────────────────────────────────────── */
+.task-body {
+  flex: 1;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.task-name {
+  font-size: var(--fs-base);         /* 16 px — WCAG minimum readable size          */
+  font-weight: var(--fw-medium);
+  color: var(--clr-text-900);
+  line-height: var(--lh-snug);
+  word-break: break-word;
+}
+.task-name.done {
+  text-decoration: line-through;
+  text-decoration-color: var(--clr-text-400);
+  color: var(--clr-text-400);
+  font-weight: var(--fw-regular);
+}
+
+/* Time + description sub-row */
+.task-sub {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-1);
+  flex-wrap: wrap;
+}
+
+.task-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--fs-xs);           /* 12 px — supporting metadata                 */
+  font-weight: var(--fw-semibold);
+  color: var(--clr-success);
+  background: var(--clr-success-surface);
+  padding: 2px var(--sp-2);
+  border-radius: var(--r-full);
+  line-height: 1.6;
+}
+
+.task-desc-text {
+  font-size: var(--fs-xs);           /* 12 px */
+  color: var(--clr-text-400);
+  line-height: var(--lh-base);
+}
+
+/* ── Right: project tag + delete ────────────────────────── */
+.task-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+  padding-left: var(--sp-3);
+}
+
+.task-proj {
+  font-size: var(--fs-xs);          /* 12 px */
+  color: var(--clr-text-400);
+  font-weight: var(--fw-medium);
+  white-space: nowrap;
+}
+.task-proj .hash {
+  color: var(--clr-brand);
+  font-weight: var(--fw-bold);
+}
+
+/* Delete — hidden until row is hovered */
+.row-del {
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;                       /* 32 px */
+  height: 2rem;
+  background: none;
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-sm);
+  color: var(--clr-text-400);
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity    var(--dur-fast) var(--ease),
+              color      var(--dur-fast) var(--ease),
+              background var(--dur-fast) var(--ease);
+}
+.row-del:hover {
+  color: var(--clr-brand);
+  background: var(--clr-brand-surface);
+}
+
+/* ── Inline "Add task" trigger ──────────────────────────── */
+.add-inline {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3);
+  cursor: pointer;
+  color: var(--clr-text-400);
+  border-radius: var(--r-sm);
+  font-size: var(--fs-base);         /* 16 px — same as task names                  */
+  font-weight: var(--fw-medium);
+  user-select: none;
+  min-height: 2.75rem;
+  transition: color      var(--dur-fast) var(--ease),
+              background var(--dur-fast) var(--ease);
+}
+.add-inline:hover {
+  color: var(--clr-brand);
+  background: var(--clr-brand-surface);
+}
+.add-inline .plus {
+  font-size: 1.25rem;
+  font-weight: var(--fw-regular);
+  line-height: 1;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 22rem;
+  padding: var(--sp-16) var(--sp-8);
+  text-align: center;
+}
+.empty-icon {
+  font-size: 3.5rem;                 /* 56 px */
+  margin-bottom: var(--sp-4);
+  line-height: 1;
+  opacity: 0.35;
+}
+.empty-title {
+  font-size: var(--fs-lg);           /* 20 px — readable heading                    */
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text-700);
+  margin-bottom: var(--sp-2);
+}
+.empty-sub {
+  font-size: var(--fs-base);         /* 16 px */
+  color: var(--clr-text-400);
+  line-height: var(--lh-base);
+  max-width: 22rem;
+}
+
+
+/* =============================================================
+   7.  MODAL  (Add Task)
+   ============================================================= */
+
+/* Dark overlay */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.50);
+  z-index: 300;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+.overlay.open {
+  display: flex;
+}
+
+/* Modal card */
+.modal {
+  background: var(--clr-surface);
+  border-radius: var(--r-xl);
+  padding: var(--sp-8);              /* 32 px — generous interior space             */
+  width: 100%;
+  max-width: 34rem;                  /* 544 px — comfortable reading width          */
+  box-shadow: var(--shadow-lg);
+  animation: modal-pop var(--dur-base) var(--ease) both;
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-title {
+  font-size: var(--fs-lg);           /* 20 px — clear modal heading                 */
+  font-weight: var(--fw-bold);
+  color: var(--clr-text-900);
+  margin-bottom: var(--sp-6);
+  line-height: var(--lh-tight);
+}
+
+/* Field group */
+.field {
+  margin-bottom: var(--sp-5);       /* 20 px — clear field separation              */
+}
+
+.field label {
+  display: block;
+  font-size: var(--fs-xs);          /* 12 px — compact but legible label           */
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--clr-text-500);
+  margin-bottom: var(--sp-2);
+}
+
+.req {
+  color: var(--clr-brand);
+  margin-left: 1px;
+}
+
+/* Inputs */
+.field input,
+.field textarea,
+.field select {
+  width: 100%;
+  border: 1.5px solid var(--clr-border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3) var(--sp-4);  /* 12 px 16 px */
+  font-family: inherit;
+  font-size: var(--fs-base);         /* 16 px — comfortable input text              */
+  font-weight: var(--fw-regular);
+  color: var(--clr-text-900);
+  background: var(--clr-input-bg);
+  outline: none;
+  resize: none;
+  line-height: var(--lh-base);
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color var(--dur-fast) var(--ease),
+              background   var(--dur-fast) var(--ease),
+              box-shadow   var(--dur-fast) var(--ease);
+}
+.field input::placeholder,
+.field textarea::placeholder {
+  color: var(--clr-text-400);
+}
+.field input:hover,
+.field textarea:hover,
+.field select:hover {
+  border-color: var(--clr-border-strong);
+}
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: var(--clr-brand);
+  background: var(--clr-surface);
+  box-shadow: 0 0 0 3px var(--clr-brand-ring);
+}
+
+.field textarea {
+  min-height: 5.5rem;
+}
+
+/* Two fields side by side */
+.field-row {
+  display: flex;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+.field-row .field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Action buttons */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-6);
+  padding-top: var(--sp-5);
+  border-top: 1px solid var(--clr-border-light);
+}
+
+.btn-cancel {
+  background: none;
+  border: 1.5px solid var(--clr-border);
+  padding: var(--sp-3) var(--sp-5);  /* 12 px 20 px */
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-sm);           /* 14 px */
+  font-weight: var(--fw-semibold);
+  color: var(--clr-text-700);
+  min-height: 2.75rem;               /* 44 px */
+  transition: background   var(--dur-fast) var(--ease),
+              border-color var(--dur-fast) var(--ease),
+              color        var(--dur-fast) var(--ease);
+}
+.btn-cancel:hover {
+  background: var(--clr-hover);
+  border-color: var(--clr-border-strong);
+  color: var(--clr-text-900);
+}
+
+.btn-add {
+  background: var(--clr-brand);
+  border: none;
+  padding: var(--sp-3) var(--sp-8);  /* 12 px 32 px — wide CTA                     */
+  border-radius: var(--r-md);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--fs-sm);           /* 14 px */
+  font-weight: var(--fw-bold);
+  color: var(--clr-text-inverse);
+  min-height: 2.75rem;
+  box-shadow: var(--shadow-xs);
+  transition: background var(--dur-fast) var(--ease),
+              box-shadow var(--dur-fast) var(--ease),
+              transform  var(--dur-fast) var(--ease);
+}
+.btn-add:hover {
+  background: var(--clr-brand-hover);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+.btn-add:active {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+
+/* =============================================================
+   8.  UTILITIES & SCROLLBAR
+   ============================================================= */
+
+/* Mobile drawer backdrop */
+.drawer-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.50);
+  z-index: 100;
+  cursor: pointer;
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+}
+.drawer-backdrop.open {
+  display: block;
+}
+
+/* Custom scrollbar — WebKit (Chrome / Edge / Safari) */
+.sidebar::-webkit-scrollbar,
+.content::-webkit-scrollbar {
+  width: 5px;
+}
+.sidebar::-webkit-scrollbar-track,
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb {
+  background: var(--clr-border);
+  border-radius: var(--r-full);
+}
+.sidebar::-webkit-scrollbar-thumb:hover,
+.content::-webkit-scrollbar-thumb:hover {
+  background: var(--clr-border-strong);
+}
+
+
+/* =============================================================
+   9.  RESPONSIVE BREAKPOINTS
+   ============================================================= */
+
+/* ── Wide / 4K (≥ 1440 px) ──────────────────────────────── */
+@media (min-width: 1440px) {
+  :root {
+    --sidebar-w: 300px;
+  }
+  .content {
+    padding: var(--sp-10) var(--sp-12) var(--sp-16);
+  }
+}
+
+/* ── Standard laptop (≤ 1024 px) ─────────────────────────── */
+@media (max-width: 1024px) {
+  :root {
+    --sidebar-w: 240px;
+  }
+  .topbar {
+    padding: 0 var(--sp-6);
+  }
+  .content {
+    padding: var(--sp-6) var(--sp-8) var(--sp-12);
+  }
+}
+
+/* ── Tablet / large phone (≤ 768 px) — drawer sidebar ────── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 101;
+    width: 280px;
+    transform: translateX(-100%);
+    box-shadow: none;
+    transition: transform   var(--dur-slow) var(--ease),
+                box-shadow  var(--dur-slow) var(--ease);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-drawer);
+  }
+
+  .menu-btn  { display: flex; }      /* ☰ hamburger visible on mobile               */
+  .close-btn { display: flex; }      /* ✕ visible inside drawer                     */
+
+  .topbar {
+    padding: 0 var(--sp-4);
+    gap: var(--sp-3);
+  }
+  .content {
+    padding: var(--sp-5) var(--sp-4) var(--sp-10);
+  }
+}
+
+/* ── Phone (≤ 480 px) ─────────────────────────────────────── */
+@media (max-width: 480px) {
+  .modal {
+    padding: var(--sp-6) var(--sp-4);
+    border-radius: var(--r-lg);
+  }
+  .modal-title {
+    font-size: var(--fs-base);
+    margin-bottom: var(--sp-4);
+  }
+
+  /* Stack side-by-side fields vertically on small screens */
+  .field-row {
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+  }
+  .field-row .field {
+    margin-bottom: var(--sp-4);
+  }
+
+  /* Hide button label — keep only + icon */
+  .btn-text {
+    display: none;
+  }
+  .topbar-add {
+    padding: var(--sp-2) var(--sp-3);
+  }
+  .topbar-title {
+    font-size: var(--fs-base);
+  }
+}
